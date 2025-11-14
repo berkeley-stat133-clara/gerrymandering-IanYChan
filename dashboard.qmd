@@ -1,5 +1,89 @@
 ---
 title: Dashboard
-format: dashboard
+format: 
+  dashboard:
+    orientation: columns
 ---
+```{r}
+#| results: 'hide'
+library(tidyverse)
+library(httr2)
+library(sf)
+library(leaflet)
+library(gt)
+library(shiny)
 
+new_map <- st_read("data/AB604/AB604.shp")
+old_map <- st_read("data/tl_2024_06_cd119/tl_2024_06_cd119.shp")
+
+```
+
+
+# Dashboard
+
+## Column
+
+### Row
+
+```{r}
+#| title: 2024 Old Map
+ggplot() +
+    geom_sf(data = old_map)
+
+```
+
+
+### Column
+
+```{r}
+#| component: valuebox
+#| title: 2024 Mean-Median Score for Democrats
+-.00945
+```
+
+```{r}
+#| component: valuebox
+#| title: 2024 Efficiency Gap for Democrats
+-.0690
+```
+
+```{r}
+#| component: valuebox
+#| title: 2024 Districts Won for Democrats
+41
+```
+
+
+
+
+
+### Row
+```{r}
+#| title: 2025 New Map
+ggplot() +
+    geom_sf(data = new_map)
+```
+
+### Column
+```{r}
+#| component: valuebox
+#| title: 2025 Redistricted Mean-Median Score
+.0242
+```
+
+```{r}
+#| component: valuebox
+#| title: 2025 Redistricted Efficiency Gap for Democrats
+-.196
+```
+
+```{r}
+#| component: valuebox
+#| title: 2025 Redistricted Districted Won for Democrats
+47
+```
+
+# Methodology
+Data was taken from the California statewide database and the officially published proposed congressional map. Shapefiles were also taken from the government census website.
+Data cleaning removed unecessary rows and renamed columns for easier manipulation. We estimated that votes were geographically even across SR precincts and used the proportion of SR precinct area in new districts to calculate the expected number of votes in the new districts. 
+However, we acknowledge that it is difficult to infer gerrymandering from single statistics, and this is not enough to determine whether or not the redistricting is gerrymandering.

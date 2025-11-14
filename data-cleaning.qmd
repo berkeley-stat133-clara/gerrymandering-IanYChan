@@ -2,4 +2,22 @@
 title: Data Cleaning
 format: typst
 ---
+```{r}
+library(tidyverse)
+library(sf)
+getwd()
 
+sr <- read.csv("data/state_g24_sov_data_by_g24_srprec.csv") # Use SR Precinct Data
+sr_clean <- sr |>
+    select(CDDIST, SRPREC_KEY, TOTREG, TOTVOTE, PRSDEM01, PRSREP01) |> #select district, sr key, # registered voters, # votes, votes for pres, votes for rep
+    filter(PRSDEM01 != "***") |> #remove the missing data
+    filter(TOTREG != 0) #remove precincts with no registered voters
+
+sr_clean <- sr_clean |>
+    mutate(dem = as.numeric(PRSDEM01)) |> #turn the democratic and republican presidential votes into numbers
+    mutate(rep = as.numeric(PRSREP01)) |>
+    select(-PRSDEM01, -PRSREP01) |>
+    filter(CDDIST != 0) #remove district 0, not sure what that is
+sr_clean <- rename(sr_clean, dist = CDDIST)
+
+```
