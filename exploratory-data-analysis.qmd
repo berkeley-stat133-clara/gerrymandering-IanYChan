@@ -5,24 +5,44 @@ format: typst
 
 ### Question 1
 
-Put your question here.
+Which SR precinct with over 100 registered voters had the lowest proportion of registered voters who voted?
 
 ### Answer 1
 
-Put your answer here.
+``` {r}
+sr_clean |>
+    filter(TOTREG >= 100) |>
+    mutate(prop = TOTVOTE/TOTREG) |>
+    arrange((prop))
+```
+
+SR Precinct 060379001372A had only 254 voters out of 1866 total registered voters, with a proportion of .13612
 
 ### Question 2
 
-Put your question here.
+Which SR precinct with at least 100 voters had the greatest proportion of voters for the democratic presidential candidate vs. the republican presidential candidate?
 
 ### Answer 2
 
-Put your answer here.
+``` {r}
+sr_clean |>
+    filter(TOTVOTE >= 100) |>
+    mutate(prop = dem/rep) |>
+    arrange(desc(prop))
+```
+
+SR Precinct 06001215110 had 2269 democratic votes to 61 republican votes, with a proportion of 37.19672
 
 ### Question 3
 
-Put your question here.
+Were any SR precincts with at least 100 voters tied for democratic vs. republican presidential candidate?
 
 ### Answer 3
 
-Put your answer here.
+```{r}
+sr_clean |>
+    filter(TOTVOTE >= 100) |>
+    filter(dem == rep)
+```
+
+Yes, there were actually 38 precincts that were tied for republican and democratic votes.

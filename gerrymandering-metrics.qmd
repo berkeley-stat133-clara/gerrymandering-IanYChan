@@ -4,8 +4,94 @@ format: typst
 ---
 
 ### 2024 Election Results and the 2024 District Map
+```{r}
+library(tidyverse)
+sr_clean |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    mutate(d_prop = d/(d+r)) |>
+    summarize(mean(d_prop) - median(d_prop))
+
+    
+sr_clean |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    mutate(d_prop = d/(d+r), r_prop = r/(d+r)) |>
+    mutate(d_wasted = case_when(d_prop >= .5 ~ d - (d+r)/2, d_prop < .5 ~ d)) |>
+    mutate(r_wasted = case_when(r_prop >= .5 ~ r - (d+r)/2, r_prop < .5 ~ r)) |>
+    summarize(eg_d = (sum(d_wasted) - sum(r_wasted))/(sum(d)+sum(r)))
+```
+
+Mean-median score was -.00945 for democrats
+Efficiency Gap was -.0690 for democrats.
 
 
 
 ### 2024 Election Results and the proposed 2025 District Map
 
+```{r}
+library(sf)
+sr_map <- st_read("data/srprec_state_g24_v01_shp/srprec_state_g24_v01_shp.shp")
+new_map <- st_read("data/AB604/AB604.shp")
+sr_map <- st_transform(sr_map, crs = 3310)
+new_map <- st_transform(new_map, crs = 3310)
+
+sr_joined <- st_intersection(st_make_valid(sr_map), st_make_valid(new_map))
+join <- sr_joined |>
+    mutate(area = st_area(geometry)) |>
+    group_by(SRPREC) |>
+    mutate(prec_area = sum(area)) |>
+    arrange(SRPREC) |>
+    left_join(sr_clean)
+join
+join_cleaned <- join |>
+    mutate(prop_area = area/prec_area) |>
+    mutate(dv = round(dem*prop_area), rv = round(rep*prop_area)) |>
+    select(DISTRICT, dv, rv)
+
+join_cleaned <- tibble(join_cleaned$DISTRICT, join_cleaned$dv, join_cleaned$rv)
+join_cleaned <- rename(join_cleaned, dist = 'join_cleaned$DISTRICT', dem = 'join_cleaned$dv', rep = 'join_cleaned$rv')
+join_cleaned$dem <- as.numeric(join_cleaned$dem)
+join_cleaned$rep <- as.numeric(join_cleaned$rep)
+
+join_cleaned <- join_cleaned |>
+    filter(!(is.na(dem))) |>
+    filter(!(is.na(rep)))
+
+join_cleaned |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    mutate(d_prop = d/(d+r)) |>
+    summarize(mean(d_prop) - median(d_prop))
+
+
+join_cleaned |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    mutate(d_prop = d/(d+r), r_prop = r/(d+r)) |>
+    mutate(d_wasted = case_when(d_prop >= .5 ~ d - (d+r)/2, d_prop < .5 ~ d)) |>
+    mutate(r_wasted = case_when(r_prop >= .5 ~ r - (d+r)/2, r_prop < .5 ~ r)) |>
+    summarize(eg_d = (sum(d_wasted) - sum(r_wasted))/(sum(d)+sum(r)))   
+
+ggplot(sr_map$geometry)
+
+```
+
+Mean-median gap for democrats is .0242
+Efficiency gap for democrats is -.196
+
+
+
+```{r}
+join_cleaned |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    summarize(sum(d > r))
+
+sr_clean |>
+    group_by(dist) |>
+    summarize(d = sum(dem), r = sum(rep)) |>
+    summarize(sum(d > r))
+```
+
+For the dashboard
